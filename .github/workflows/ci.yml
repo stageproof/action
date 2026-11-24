@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Reject bad inputs
+        run: bash scripts/test-inputs.sh
+
+      - name: Install the released binary
+        env:
+          STAGEPROOF_VERSION: v0.3.1
+        run: |
+          set -euo pipefail
+          bash scripts/install.sh
+          got=$(stageproof version)
+          test "$got" = "stageproof v0.3.1 (Apache-2.0)"
+          echo "$got"
