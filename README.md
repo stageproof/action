@@ -15,7 +15,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: stageproof/action@db6a432ddaec807a9356e05c33ad302ade24803b
+      - uses: stageproof/action@v1
         with:
           current-k8s: "1.35"
           api-server: auto
@@ -23,7 +23,7 @@ jobs:
           live: "false"
 ```
 
-The `uses` line is the commit that was checked in the sandbox. A floating `v1` tag is not published yet.
+`v1` is the major tag. It points at the latest `v1.x.x` release.
 
 The action checks out the pull request with full git history. A caller checkout is not required. `pull-requests: write` lets `stageproof comment` post one comment, or update the comment that already contains `<!-- stageproof-comment -->`. A fork pull request often has a read-only token. The comment step treats HTTP 403 as success and still returns the check exit code.
 
