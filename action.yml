@@ -1,11 +1,14 @@
 name: Stageproof
 description: Check a Helm chart upgrade on a pull request
+branding:
+  icon: shield
+  color: blue
 
 inputs:
   version:
     description: Released Stageproof tag. A pre-release tag is rejected.
     required: false
-    default: v0.3.1
+    default: v0.4.0
   current-k8s:
     description: Kubernetes version the cluster runs, such as 1.35.
     required: true
