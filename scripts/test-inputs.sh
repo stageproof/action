@@ -60,4 +60,13 @@ if [ "$code" -ne 2 ] || grep -q CALLED /tmp/sp-action-err; then
   fail "bad api-server reached the binary (exit ${code})"
 fi
 
+sums=$(mktemp)
+printf '%s\n' \
+  'aaa  stageproof_0.3.1_linux_amd64.tar.gz' \
+  'bbb  stageproof_0.3.1_linux_amd64.tar.gz.sbom.json' > "$sums"
+line=$(awk -v name='stageproof_0.3.1_linux_amd64.tar.gz' '$2 == name { print }' "$sums")
+if [ "$line" != 'aaa  stageproof_0.3.1_linux_amd64.tar.gz' ]; then
+  fail "checksum line matched ${line}"
+fi
+
 echo "input checks passed"

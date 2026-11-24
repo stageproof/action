@@ -37,7 +37,8 @@ curl -fsSL -o "${work}/${archive}" "${url}/${archive}"
 
 (
   cd "$work"
-  if ! grep -F "  ${archive}" checksums.txt > check-one.txt; then
+  # Match the archive name exactly. The SBOM line ends in .tar.gz.sbom.json.
+  if ! awk -v name="$archive" '$2 == name { print; found=1 } END { exit !found }' checksums.txt > check-one.txt; then
     echo "stageproof: checksums.txt has no line for ${archive}" >&2
     exit 2
   fi
