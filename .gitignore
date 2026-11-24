@@ -1,0 +1,6 @@
+stageproof
+stageproof-comment.md
+stageproof-report.json
+stageproof.sarif
+checksums.txt
+*.tar.gz

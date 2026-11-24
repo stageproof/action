@@ -1,0 +1,107 @@
+name: Stageproof
+description: Check a Helm chart upgrade on a pull request
+
+inputs:
+  version:
+    description: Released Stageproof tag. A pre-release tag is rejected.
+    required: false
+    default: v0.3.1
+  current-k8s:
+    description: Kubernetes version the cluster runs, such as 1.35.
+    required: true
+  next-k8s:
+    description: Next Kubernetes version. Leave empty to skip that check.
+    required: false
+    default: ""
+  api-server:
+    description: auto, off, or require.
+    required: false
+    default: auto
+  values-proof:
+    description: default or full.
+    required: false
+    default: default
+  offline:
+    description: "true skips container registry lookups."
+    required: false
+    default: "false"
+  live:
+    description: "true rehearses the upgrade in a temporary kind cluster."
+    required: false
+    default: "false"
+  require-rehearsal:
+    description: "true exits 2 unless the rehearsal ran and passed."
+    required: false
+    default: "false"
+  comment:
+    description: "true posts or updates one pull request comment."
+    required: false
+    default: "true"
+  sarif:
+    description: "true writes SARIF and uploads it."
+    required: false
+    default: "false"
+  working-directory:
+    description: Directory that contains the chart checkout.
+    required: false
+    default: "."
+
+outputs:
+  result:
+    description: Exit code from stageproof check-pr. 0 passed, 1 blocked, 2 not checked.
+    value: ${{ steps.check.outputs.result }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        fetch-depth: 0
+
+    - uses: azure/setup-helm@2f5e7bc67f1f9972ab16657bb795f36d8f04de0e # v5.1.0
+      with:
+        version: v3.22.1
+
+    - name: Install kind
+      if: inputs.live == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ "$(uname -s)" != "Linux" ] || [ "$(uname -m)" != "x86_64" ]; then
+          echo "stageproof: live rehearsal in this action is set up for Linux x86_64" >&2
+          exit 2
+        fi
+        curl -fsSL -o /tmp/kind "https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64"
+        echo "aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d  /tmp/kind" | sha256sum -c -
+        sudo install -m 0755 /tmp/kind /usr/local/bin/kind
+        curl -fsSL -o /tmp/kubectl "https://dl.k8s.io/release/v1.35.10/bin/linux/amd64/kubectl"
+        echo "c49a28f1f4efc4d475ed05f47f2ce8e563bf7bef69ed77fe1b924ea6d83b6327  /tmp/kubectl" | sha256sum -c -
+        sudo install -m 0755 /tmp/kubectl /usr/local/bin/kubectl
+
+    - name: Install Stageproof
+      shell: bash
+      env:
+        STAGEPROOF_VERSION: ${{ inputs.version }}
+      run: bash "${{ github.action_path }}/scripts/install.sh"
+
+    - name: Check the pull request
+      id: check
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        STAGEPROOF_CURRENT_K8S: ${{ inputs.current-k8s }}
+        STAGEPROOF_NEXT_K8S: ${{ inputs.next-k8s }}
+        STAGEPROOF_API_SERVER: ${{ inputs.api-server }}
+        STAGEPROOF_VALUES_PROOF: ${{ inputs.values-proof }}
+        STAGEPROOF_OFFLINE: ${{ inputs.offline }}
+        STAGEPROOF_LIVE: ${{ inputs.live }}
+        STAGEPROOF_REQUIRE: ${{ inputs.require-rehearsal }}
+        STAGEPROOF_COMMENT: ${{ inputs.comment }}
+        STAGEPROOF_SARIF: ${{ inputs.sarif }}
+      run: bash "${{ github.action_path }}/scripts/check.sh"
+
+    - name: Upload SARIF
+      if: inputs.sarif == 'true' && steps.check.outputs.result != ''
+      uses: github/codeql-action/upload-sarif@d2aacf54c2fbc910db8d7ec338fdb54ea48c692d # v3.39.4
+      with:
+        sarif_file: ${{ inputs.working-directory }}/stageproof.sarif
