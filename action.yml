@@ -8,7 +8,7 @@ inputs:
   version:
     description: Released Stageproof tag. A pre-release tag is rejected.
     required: false
-    default: v0.5.3
+    default: v0.5.4
   current-k8s:
     description: Kubernetes version the cluster runs, such as 1.35.
     required: true
