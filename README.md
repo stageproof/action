@@ -33,7 +33,7 @@ Do not run this action from `pull_request_target`. That event checks out the bas
 
 | Input | Default | Meaning |
 |---|---|---|
-| `version` | `v0.5.3` | Release tag. The action accepts only `v` plus three numbers. |
+| `version` | `v0.5.4` | Release tag. The action accepts only `v` plus three numbers. |
 | `current-k8s` | required | Kubernetes version the cluster runs, such as `1.35`. |
 | `next-k8s` | empty | Also check this next Kubernetes version. |
 | `api-server` | `auto` | `auto`, `off`, or `require`. |
