@@ -4,7 +4,7 @@ set -euo pipefail
 
 version="${STAGEPROOF_VERSION:-}"
 if ! printf '%s\n' "$version" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-  echo "stageproof: version must look like v0.5.0" >&2
+  echo "stageproof: version must look like v0.5.1" >&2
   exit 2
 fi
 
