@@ -19,10 +19,10 @@ jobs:
 
       - name: Install the released binary
         env:
-          STAGEPROOF_VERSION: v0.4.0
+          STAGEPROOF_VERSION: v0.5.0
         run: |
           set -euo pipefail
           bash scripts/install.sh
           got=$(stageproof version)
-          test "$got" = "stageproof v0.4.0 (Apache-2.0)"
+          test "$got" = "stageproof v0.5.0 (Apache-2.0)"
           echo "$got"
